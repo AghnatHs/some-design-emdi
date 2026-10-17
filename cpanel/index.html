@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Databases | cPanel Jupiter UI study</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="top-strip">
+      <div class="top-strip-inner">
+        <p class="breadcrumb">cPanel <span aria-hidden="true">/</span> Database tools</p>
+        <a class="back-link" href="../index.html">Back to showcase picker</a>
+        <p class="preview-label">Jupiter theme preview</p>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="sidebar-card card">
+        <h2 class="card-header">Hosting tools</h2>
+        <nav aria-label="Hosting tools">
+          <a href="#databases" aria-current="page">Databases</a>
+          <a href="#connection-details">Connection details</a>
+          <a href="#preview-states">Table states</a>
+        </nav>
+        <p class="sidebar-note">This interface is a visual preview with illustrative sample content.</p>
+      </aside>
+
+      <main class="content-card card" id="main">
+        <h1 class="card-header page-heading">Databases</h1>
+        <div class="content-body">
+          <p class="intro">A sample database browser arranged in the cPanel Jupiter card layout.</p>
+
+          <section id="databases" aria-labelledby="database-list-heading">
+            <div class="section-heading">
+              <h2 id="database-list-heading">Database list</h2>
+              <p>Illustrative records</p>
+            </div>
+            <div class="toolbar">
+              <label for="database-search">Filter databases</label>
+              <input class="field" id="database-search" type="search" placeholder="Search sample records" />
+              <button class="btn" id="clear-search" type="button">Clear</button>
+            </div>
+
+            <div class="table-frame" role="region" aria-label="Sample database records" tabindex="0">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Database</th>
+                    <th scope="col">Purpose</th>
+                    <th scope="col">Access</th>
+                  </tr>
+                </thead>
+                <tbody id="database-rows">
+                  <tr><td>catalog_stage</td><td>Catalog preview</td><td><span class="status status-ready">Available</span></td></tr>
+                  <tr><td>cms_archive</td><td>Content archive</td><td><span class="status status-limited">Read only</span></td></tr>
+                  <tr><td>mailing_list</td><td>Mailing records</td><td><span class="status status-ready">Available</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-message" id="table-message" aria-live="polite"></p>
+          </section>
+
+          <section class="details-section" id="connection-details" aria-labelledby="connection-heading">
+            <h2 id="connection-heading">Connection details</h2>
+            <dl class="details-list">
+              <div><dt>Host</dt><dd>[HOST]</dd></div>
+              <div><dt>Database</dt><dd>[SAMPLE DATABASE]</dd></div>
+              <div><dt>Credentials</dt><dd>Not shown in this preview</dd></div>
+            </dl>
+          </section>
+
+          <fieldset class="state-picker" id="preview-states">
+            <legend>Preview table state</legend>
+            <p>These controls change the sample table only. No hosting account is connected.</p>
+            <div class="state-buttons" role="group" aria-label="Sample table state">
+              <button class="btn" type="button" data-state="ready" aria-pressed="true">Loaded</button>
+              <button class="btn" type="button" data-state="empty" aria-pressed="false">Empty</button>
+              <button class="btn" type="button" data-state="loading" aria-pressed="false">Loading</button>
+              <button class="btn" type="button" data-state="error" aria-pressed="false">Error</button>
+            </div>
+          </fieldset>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const sampleDatabases = [
+        { name: "catalog_stage", purpose: "Catalog preview", access: "Available", status: "ready" },
+        { name: "cms_archive", purpose: "Content archive", access: "Read only", status: "limited" },
+        { name: "mailing_list", purpose: "Mailing records", access: "Available", status: "ready" },
+      ];
+      const rows = document.querySelector("#database-rows");
+      const message = document.querySelector("#table-message");
+      const search = document.querySelector("#database-search");
+      let currentState = "ready";
+
+      function renderTable() {
+        rows.replaceChildren();
+        message.textContent = "";
+        if (currentState === "loading") {
+          message.textContent = "Loading the sample database list…";
+          return;
+        }
+        if (currentState === "error") {
+          message.textContent = "The sample list could not load. Choose Loaded to retry the preview.";
+          return;
+        }
+        if (currentState === "empty") {
+          message.textContent = "There are no sample database records in this view.";
+          return;
+        }
+
+        const query = search.value.trim().toLowerCase();
+        const visibleDatabases = sampleDatabases.filter((database) =>
+          Object.values(database).join(" ").toLowerCase().includes(query),
+        );
+        if (visibleDatabases.length === 0) {
+          message.textContent = "No matching sample databases. Clear the filter to see the full list.";
+          return;
+        }
+
+        visibleDatabases.forEach((database) => {
+          const row = document.createElement("tr");
+          const name = document.createElement("td");
+          const purpose = document.createElement("td");
+          const access = document.createElement("td");
+          const status = document.createElement("span");
+          name.textContent = database.name;
+          purpose.textContent = database.purpose;
+          status.className = `status status-${database.status}`;
+          status.textContent = database.access;
+          access.append(status);
+          row.append(name, purpose, access);
+          rows.append(row);
+        });
+      }
+
+      document.querySelectorAll("[data-state]").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentState = button.dataset.state;
+          document.querySelectorAll("[data-state]").forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          renderTable();
+        });
+      });
+      search.addEventListener("input", renderTable);
+      document.querySelector("#clear-search").addEventListener("click", () => {
+        search.value = "";
+        document.querySelector('[data-state="ready"]').click();
+        search.focus();
+      });
+    </script>
+  </body>
+</html>

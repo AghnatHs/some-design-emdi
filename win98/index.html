@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#008080" />
+    <title>Archive Browser | Windows 98 UI study</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="desktop">
+      <header class="desktop-heading">
+        <p>Interface study / Windows 98</p>
+        <a class="back-link" href="../index.html">Back to showcase picker</a>
+        <p>Visual preview</p>
+      </header>
+
+      <div class="desktop-layout">
+        <nav class="win98-panel workspace" aria-label="Workspace">
+          <h2 class="workspace-heading">Workspace</h2>
+          <a href="#records" aria-current="page">Archive index</a>
+          <a href="#filters">Find records</a>
+          <a href="#preview-states">View states</a>
+          <div class="workspace-divider" aria-hidden="true"></div>
+          <p class="workspace-note">This window contains illustrative sample records.</p>
+        </nav>
+
+        <main class="win98-panel application" id="main">
+          <header class="titlebar">
+            <h1>Archive Browser</h1>
+            <span class="titlebar-caption">Records</span>
+          </header>
+
+          <p class="preview-note">Visual preview. All records shown here are sample content.</p>
+
+          <section class="toolbar" id="filters" aria-labelledby="filter-heading">
+            <h2 id="filter-heading">Find a record</h2>
+            <div class="filter-controls">
+              <label class="visually-hidden" for="record-search">Search sample records</label>
+              <input class="win98-field" id="record-search" type="search" placeholder="Search the archive" />
+              <button class="win98-button" id="clear-search" type="button">Clear</button>
+            </div>
+          </section>
+
+          <section class="records-section" id="records" aria-labelledby="records-heading">
+            <div class="section-heading">
+              <h2 id="records-heading">Indexed items</h2>
+              <span class="section-caption">Illustrative records</span>
+            </div>
+            <div class="table-frame" role="region" aria-label="Sample archive records" tabindex="0">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Reference</th>
+                    <th scope="col">Item</th>
+                    <th scope="col">Format</th>
+                    <th scope="col">Access</th>
+                  </tr>
+                </thead>
+                <tbody id="record-rows">
+                  <tr><td>ARC-14</td><td>Parts list</td><td>Document</td><td>Read only</td></tr>
+                  <tr><td>ARC-27</td><td>Service notes</td><td>Notebook</td><td>Editable</td></tr>
+                  <tr><td>ARC-31</td><td>Device register</td><td>Index</td><td>Read only</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-message" id="table-message" aria-live="polite"></p>
+          </section>
+
+          <fieldset class="state-picker" id="preview-states">
+            <legend>Preview data state</legend>
+            <p class="state-help">Switch states to inspect the table treatment. Nothing connects to a live archive.</p>
+            <div class="state-buttons" role="group" aria-label="Sample table state">
+              <button class="win98-button" type="button" data-state="ready" aria-pressed="true">Loaded</button>
+              <button class="win98-button" type="button" data-state="empty" aria-pressed="false">Empty</button>
+              <button class="win98-button" type="button" data-state="loading" aria-pressed="false">Loading</button>
+              <button class="win98-button" type="button" data-state="error" aria-pressed="false">Error</button>
+            </div>
+          </fieldset>
+
+          <footer class="statusbar" id="system-notes">
+            <span>Ready</span>
+            <span>Local visual preview</span>
+          </footer>
+        </main>
+      </div>
+      <footer class="desktop-footer">Classic desktop language / sharp edges / immediate feedback</footer>
+    </div>
+
+    <script>
+      const sampleRecords = [
+        ["ARC-14", "Parts list", "Document", "Read only"],
+        ["ARC-27", "Service notes", "Notebook", "Editable"],
+        ["ARC-31", "Device register", "Index", "Read only"],
+      ];
+      const rows = document.querySelector("#record-rows");
+      const message = document.querySelector("#table-message");
+      const search = document.querySelector("#record-search");
+      let currentState = "ready";
+
+      function renderTable() {
+        rows.replaceChildren();
+        message.textContent = "";
+
+        if (currentState === "loading") {
+          message.textContent = "Loading the sample archive…";
+          return;
+        }
+        if (currentState === "error") {
+          message.textContent = "The sample archive could not load. Choose Loaded to try again.";
+          return;
+        }
+        if (currentState === "empty") {
+          message.textContent = "No sample records are available in this view.";
+          return;
+        }
+
+        const query = search.value.trim().toLowerCase();
+        const visibleRecords = sampleRecords.filter((record) => record.join(" ").toLowerCase().includes(query));
+        if (visibleRecords.length === 0) {
+          message.textContent = "No matching sample records. Clear the search to see the full list.";
+          return;
+        }
+
+        visibleRecords.forEach((record) => {
+          const row = document.createElement("tr");
+          record.forEach((value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.append(cell);
+          });
+          rows.append(row);
+        });
+      }
+
+      document.querySelectorAll("[data-state]").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentState = button.dataset.state;
+          document.querySelectorAll("[data-state]").forEach((item) => {
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+          renderTable();
+        });
+      });
+      search.addEventListener("input", renderTable);
+      document.querySelector("#clear-search").addEventListener("click", () => {
+        search.value = "";
+        currentState = "ready";
+        document.querySelector('[data-state="ready"]').click();
+        search.focus();
+      });
+    </script>
+  </body>
+</html>

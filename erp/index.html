@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Requests | ERP interface study</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="app-bar">
+      <button class="btn btn-secondary menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="module-nav">Modules</button>
+      <span class="wordmark">Operations</span>
+      <span class="app-context">Request queue</span>
+      <a class="showcase-return" href="../index.html">Back to showcase picker</a>
+    </header>
+
+    <div class="app-shell">
+      <nav class="sidebar" id="module-nav" aria-label="Modules">
+        <p class="nav-heading">Work</p>
+        <a class="nav-link" href="#requests" aria-current="page">Requests</a>
+        <a class="nav-link" href="#preview-states">Table states</a>
+        <p class="nav-heading">Reference</p>
+        <a class="nav-link" href="#request-notes">Preview notes</a>
+      </nav>
+
+      <main class="main-content" id="main">
+        <div class="page-heading">
+          <div>
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+              <span>Operations</span><span aria-hidden="true">/</span><span aria-current="page">Requests</span>
+            </nav>
+            <h1>Requests</h1>
+          </div>
+          <button class="btn btn-primary" id="new-request" type="button" aria-expanded="false" aria-controls="new-record">New request</button>
+        </div>
+
+        <section class="panel request-panel" id="requests" aria-labelledby="request-list-heading">
+          <div class="panel-heading">
+            <div>
+              <h2 id="request-list-heading">Request queue</h2>
+              <p>Illustrative sample records. No live account data is connected.</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <label class="visually-hidden" for="request-search">Search sample requests</label>
+            <input class="field" id="request-search" type="search" placeholder="Search requests" />
+            <button class="btn btn-secondary" id="clear-search" type="button">Clear</button>
+          </div>
+          <div class="table-frame" role="region" aria-label="Illustrative request records" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Status</th>
+                  <th scope="col">Request</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Needed by</th>
+                </tr>
+              </thead>
+              <tbody id="request-rows">
+                <tr>
+                  <td data-label="Status"><span class="badge badge-info">In review</span></td>
+                  <td data-label="Request">Renew mail relay certificate</td>
+                  <td data-label="Type">Maintenance</td>
+                  <td data-label="Needed by" class="date-cell">2026-11-02</td>
+                </tr>
+                <tr>
+                  <td data-label="Status"><span class="badge badge-neutral">Queued</span></td>
+                  <td data-label="Request">Replace lobby sensor</td>
+                  <td data-label="Type">Facilities</td>
+                  <td data-label="Needed by" class="date-cell">2026-11-05</td>
+                </tr>
+                <tr>
+                  <td data-label="Status"><span class="badge badge-success">Approved</span></td>
+                  <td data-label="Request">Review archive retention</td>
+                  <td data-label="Type">Records</td>
+                  <td data-label="Needed by" class="date-cell">2026-11-08</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-message" id="table-message" aria-live="polite"></p>
+          <footer class="table-footer">
+            <span id="record-count" aria-live="polite">Showing sample requests</span>
+            <span>Preview list</span>
+          </footer>
+        </section>
+
+        <fieldset class="state-picker" id="preview-states">
+          <legend>Preview table state</legend>
+          <p>Switch states to inspect the queue. New requests exist only in this browser preview.</p>
+          <div class="state-buttons" role="group" aria-label="Request table state">
+            <button class="btn btn-secondary" type="button" data-state="ready" aria-pressed="true">Loaded</button>
+            <button class="btn btn-secondary" type="button" data-state="empty" aria-pressed="false">Empty</button>
+            <button class="btn btn-secondary" type="button" data-state="loading" aria-pressed="false">Loading</button>
+            <button class="btn btn-secondary" type="button" data-state="error" aria-pressed="false">Error</button>
+          </div>
+        </fieldset>
+
+        <section class="panel form-panel" id="new-record" aria-labelledby="form-heading" hidden>
+          <div class="panel-heading">
+            <div>
+              <h2 id="form-heading">New sample request</h2>
+              <p>This browser-only form adds a row to the preview. It does not save to a service.</p>
+            </div>
+          </div>
+          <form id="request-form">
+            <div class="form-field">
+              <label for="request-title">Request title <span aria-hidden="true">*</span></label>
+              <input class="field" id="request-title" name="title" type="text" required maxlength="90" autocomplete="off" />
+            </div>
+            <div class="form-field">
+              <label for="request-type">Type</label>
+              <select class="field" id="request-type" name="type">
+                <option>Maintenance</option>
+                <option>Facilities</option>
+                <option>Records</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Add to preview</button>
+              <button class="btn btn-secondary" id="cancel-request" type="button">Cancel</button>
+            </div>
+            <p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <p class="preview-footnote" id="request-notes">Sample content is used to show the table density and status treatments.</p>
+      </main>
+    </div>
+
+    <script>
+      const sampleRequests = [
+        { status: "In review", tone: "info", title: "Renew mail relay certificate", type: "Maintenance", due: "2026-11-02" },
+        { status: "Queued", tone: "neutral", title: "Replace lobby sensor", type: "Facilities", due: "2026-11-05" },
+        { status: "Approved", tone: "success", title: "Review archive retention", type: "Records", due: "2026-11-08" },
+      ];
+      const rows = document.querySelector("#request-rows");
+      const message = document.querySelector("#table-message");
+      const search = document.querySelector("#request-search");
+      const count = document.querySelector("#record-count");
+      const formPanel = document.querySelector("#new-record");
+      const newRequestButton = document.querySelector("#new-request");
+      const requestForm = document.querySelector("#request-form");
+      const requestTitle = document.querySelector("#request-title");
+      const formFeedback = document.querySelector("#form-feedback");
+      let currentState = "ready";
+      let requests = [...sampleRequests];
+
+      function makeCell(label, value, className = "") {
+        const cell = document.createElement("td");
+        cell.dataset.label = label;
+        if (className) cell.className = className;
+        cell.textContent = value;
+        return cell;
+      }
+
+      function renderTable() {
+        rows.replaceChildren();
+        message.replaceChildren();
+        count.textContent = "Showing sample requests";
+
+        if (currentState === "loading") {
+          message.textContent = "Loading sample requests…";
+          count.textContent = "Loading preview";
+          for (let index = 0; index < 3; index += 1) {
+            const row = document.createElement("tr");
+            ["Status", "Request", "Type", "Needed by"].forEach((label, cellIndex) => {
+              const cell = document.createElement("td");
+              cell.dataset.label = label;
+              const skeleton = document.createElement("span");
+              skeleton.className = `skeleton-line skeleton-line-${cellIndex + 1}`;
+              skeleton.setAttribute("aria-hidden", "true");
+              cell.append(skeleton);
+              row.append(cell);
+            });
+            rows.append(row);
+          }
+          return;
+        }
+        if (currentState === "error") {
+          message.textContent = "The sample queue could not load. Choose Loaded to retry the preview.";
+          count.textContent = "Preview unavailable";
+          return;
+        }
+        if (currentState === "empty") {
+          message.textContent = "No sample requests in this view. Choose Loaded to restore the example list.";
+          count.textContent = "No sample requests";
+          return;
+        }
+
+        const query = search.value.trim().toLowerCase();
+        const visibleRequests = requests.filter((request) =>
+          [request.status, request.title, request.type, request.due].join(" ").toLowerCase().includes(query),
+        );
+        count.textContent = `Showing ${visibleRequests.length} sample ${visibleRequests.length === 1 ? "request" : "requests"}`;
+        if (visibleRequests.length === 0) {
+          message.textContent = "No matching sample requests. Clear the search to see the full list.";
+          return;
+        }
+
+        visibleRequests.forEach((request) => {
+          const row = document.createElement("tr");
+          const statusCell = document.createElement("td");
+          statusCell.dataset.label = "Status";
+          const badge = document.createElement("span");
+          badge.className = `badge badge-${request.tone}`;
+          badge.textContent = request.status;
+          statusCell.append(badge);
+          row.append(statusCell, makeCell("Request", request.title), makeCell("Type", request.type), makeCell("Needed by", request.due, "date-cell"));
+          rows.append(row);
+        });
+      }
+
+      function setTableState(button) {
+        currentState = button.dataset.state;
+        document.querySelectorAll("[data-state]").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        renderTable();
+      }
+
+      function setFormOpen(isOpen) {
+        formPanel.hidden = !isOpen;
+        newRequestButton.setAttribute("aria-expanded", String(isOpen));
+        newRequestButton.textContent = isOpen ? "Close form" : "New request";
+        newRequestButton.classList.toggle("btn-primary", !isOpen);
+        newRequestButton.classList.toggle("btn-secondary", isOpen);
+        if (isOpen) requestTitle.focus();
+        else newRequestButton.focus();
+      }
+
+      document.querySelectorAll("[data-state]").forEach((button) => {
+        button.addEventListener("click", () => setTableState(button));
+      });
+      search.addEventListener("input", renderTable);
+      document.querySelector("#clear-search").addEventListener("click", () => {
+        search.value = "";
+        setTableState(document.querySelector('[data-state="ready"]'));
+        search.focus();
+      });
+      newRequestButton.addEventListener("click", () => {
+        const isOpen = !formPanel.hidden;
+        if (isOpen) {
+          requestForm.reset();
+          formFeedback.textContent = "";
+        }
+        setFormOpen(!isOpen);
+      });
+      document.querySelector("#cancel-request").addEventListener("click", () => {
+        requestForm.reset();
+        formFeedback.textContent = "";
+        setFormOpen(false);
+      });
+      requestForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const title = requestTitle.value.trim();
+        if (!title) {
+          requestTitle.focus();
+          requestTitle.reportValidity();
+          return;
+        }
+        requests = [{ status: "Queued", tone: "neutral", title, type: document.querySelector("#request-type").value, due: "Not set" }, ...requests];
+        search.value = "";
+        setTableState(document.querySelector('[data-state="ready"]'));
+        formFeedback.textContent = "Sample request added to this browser preview. It is not saved to a service.";
+        requestForm.reset();
+        requestTitle.focus();
+      });
+
+      const menuToggle = document.querySelector("#menu-toggle");
+      const moduleNav = document.querySelector("#module-nav");
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+        menuToggle.setAttribute("aria-expanded", String(!isOpen));
+        moduleNav.dataset.open = String(!isOpen);
+      });
+      moduleNav.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          menuToggle.setAttribute("aria-expanded", "false");
+          moduleNav.dataset.open = "false";
+        });
+      });
+    </script>
+  </body>
+</html>
